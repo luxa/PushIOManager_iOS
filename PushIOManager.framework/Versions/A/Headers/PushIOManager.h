@@ -2,7 +2,7 @@
 //  PushIOManager.h
 //  PushIOManager
 //
-//  Copyright © 2009-2017 Oracle. All rights reserved.
+//  Copyright © 2017 Oracle Inc. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -128,16 +128,20 @@ __attribute__((deprecated)) typedef enum {
 /**
  Help setting the logging level for PushIOManager.
  
- - PIOLogLevelNone:     Log level none
- - PIOLogLevelError:    Log level Error only.
- - PIOLogLevelWarn:     Log level warnings.
- - PIOLogLevelInfo:     Log level informative.
+ - PIOLogLevelNone:       Log level showing no logs.
+ - PIOLogLevelError:      Log level showing only errors.
+ - PIOLogLevelWarn:       Log level showing errors and warnings.
+ - PIOLogLevelInfo:       Log level showing informational messages, errors and warnings (default).
+ - PIOLogLevelDebug:      Log level showing debugging statements intended for app developers, informational messages, errors and warnings.
+ - PIOLogLevelVerbose:    Log level showing debugging statements intended for SDK developers & app developers, informational messages, errors and warnings.
  */
 typedef NS_ENUM(NSInteger, PIOLogLevel) {
     PIOLogLevelNone = 0,
     PIOLogLevelError = 1,
     PIOLogLevelWarn = 2,
-    PIOLogLevelInfo = 3
+    PIOLogLevelInfo = 3,
+    PIOLogLevelDebug = 4,
+    PIOLogLevelVerbose = 5
 };
 
 
@@ -193,6 +197,26 @@ typedef NS_ENUM(NSInteger, PIOErrorCode) {
     PIOErrorCodeInvalidPayload,
     PIOErrorCodeEmptyResponse
 };
+
+
+//Multiple Inbox Error Domains
+
+FOUNDATION_EXPORT NSString * const PIOErrorDomainMCFailure;
+
+
+/**
+ Multiple Inbox error codes
+ 
+ - PIOHTTTPStatusCodeInvalidAppOrAccountToken:Invalid Account Token/Invalid App Token
+ - PIOHTTTPStatusCodeMCFailure:Message Center not enabled for App/Not RI-App(not migrated App)/
+ Invalid message center/Message Center deleted
+ - PIOHTTTPStatusCodeMCDisabled:Message Center Feature disabled at RI pod/account
+ */
+
+#define PIOHTTTPStatusCodeInvalidAppOrAccountToken  400
+#define PIOHTTTPStatusCodeMCFailure                 404
+#define PIOHTTTPStatusCodeMCDisabled                403
+
 
 /**
  Callback used for asynchronous communication between application and PushIO SDK.
@@ -372,18 +396,30 @@ typedef NSDictionary* (^PIOGlobalPropertiesBlock)(NSDictionary *event);
 
 
 /**
+ @deprecated This method is deprecated starting from version 6.33.0
+ @note Please use @code setLoggingEnabled: instead.
  Start printing log in debug console. Different level of logging can be enabled with this.
  
  @param enable determines if SDK needs to enable logging.
  
  */
-- (void) enableLogging:(BOOL)enable;
+- (void) enableLogging:(BOOL)enable __attribute__((deprecated));
 
 
 /**
- Stop printing log in debug console.
+ Enable/Disable logging. By default logging is enabled with default PIOLogLevelInfo. Developer can change the log level by calling setLogLevel method.
+
+ @param enable If `YES`, enable console log printing. If `NO`, disable console log printing.
  */
-- (void) disableLogging;
+- (void) setLoggingEnabled:(BOOL)enable;
+
+/**
+ @deprecated This method is deprecated starting from version 6.33.0
+ @note Please use @code setLoggingEnabled: instead.
+ 
+ Stop console log printing.
+ */
+- (void) disableLogging __attribute__((deprecated));
 
 
 /**
@@ -418,6 +454,18 @@ typedef NSDictionary* (^PIOGlobalPropertiesBlock)(NSDictionary *event);
  @return TRUE if SDK configured successfully (or provided APIKey is valid), FALSE otherwise.
  */
 - (BOOL)configureWithAPIKey:(NSString *)apiKey accountToken:(NSString *)accountToken error:(NSError *__autoreleasing *)error;
+
+
+/**
+ Configure the application and register with server, for given APIKey and AccountToken.
+ 
+ @param apiKey       generated in RI portal and used to configure SDK.
+ @param accountToken generated in RI portal and used to configure SDK.
+ @param completionHandler        Called when application finish registration.
+ 
+ @return TRUE if SDK configured successfully (or provided APIKey is valid), FALSE otherwise. Registration status communicated through completion handler.
+ */
+- (BOOL)configureAndRegisterWithAPIKey:(NSString *)apiKey accountToken:(NSString *)accountToken completionHandler:(PIOCompletionHandler)completionHandler;
 
 
 /**-----------------------------------------------------------------------------
@@ -993,5 +1041,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
  @param completionHandler Callback to notify when operation complete.
  */
 -(void) fetchMessagesForMessageCenter:(NSString *)messageCenter CompletionHandler:(PIOMessageCenterCompletionHandler)completionHandler;
+
+
+/**
+ Reset all SDK data. i.e.: DeviceID, UserId, Preferences.
+ */
+-(void) resetAllData;
 
 @end
