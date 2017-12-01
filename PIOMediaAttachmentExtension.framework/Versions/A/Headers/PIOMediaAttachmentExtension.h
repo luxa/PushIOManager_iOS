@@ -2,7 +2,7 @@
 //  PIOMediaAttachmentExtension.h
 //  PIOMediaAttachmentExtension
 //
-//  Copyright © 2009-2017 Oracle. All rights reserved.
+//  Copyright © 2017 Oracle Inc. All rights reserved.
 //
 
 #import <UserNotifications/UserNotifications.h>
