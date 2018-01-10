@@ -11,9 +11,10 @@ Pod::Spec.new do |s|
 
 
   s.vendored_frameworks = "PushIOManager.framework"
-  s.resource = 'PushIOManager.bundle'
+#  s.resource = 'PushIOManager.bundle'
   s.preserve_paths = "PushIOManager.framework"
 
-  s.framework  = "CoreLocation"
+  s.library      = "sqlite3"
+  s.frameworks   = "CoreLocation", "UserNotifications"
   s.requires_arc = true
 end
